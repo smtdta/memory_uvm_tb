@@ -8,9 +8,18 @@ class mem_sequence extends uvm_sequence #(mem_tx);
   
   task body();
     //mem_tx req;// by default
-    req=new();
+    /*req=new();
     assert(req.randomize() with {wr_rd_i==1;});
-    req.print(); // note no print method was declared in mem_tx 
+    $display("FROM SEQUENCE");
+    req.print(); // note no print method was declared in mem_tx  */
+    
+    req=new();
+    start_item(req);
+    assert(req.randomize with {wr_rd_i==1;});
+    finish_item(req);
+    $display("FROM SEQUENCE");
+    req.print(); // note no print method was declared in mem_tx  */
+    
   endtask
   
 endclass

@@ -25,5 +25,10 @@ class mem_agent extends uvm_agent;
     cov_o=mem_coverage::type_id::create("cov_o",this);
   endfunction 
   
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    //sqr , drv connection
+    drv_o.seq_item_port.connect(sqr_o.seq_item_export);
+  endfunction
   
 endclass

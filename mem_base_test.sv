@@ -29,16 +29,17 @@ class mem_base_test extends uvm_test;
     uvm_top.print_topology();
   endfunction 
   
-  task run_phase(uvm_phase phase);
+ task run_phase(uvm_phase phase);
 
   phase.raise_objection(this);
 
   seq_o = mem_sequence::type_id::create("seq_o");
-
   seq_o.start(env_o.agent_o.sqr_o);
+
+  phase.phase_done.set_drain_time(this, 100ns);
 
   phase.drop_objection(this);
 
-endtask 
-  
+ endtask
+
 endclass
