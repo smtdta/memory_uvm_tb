@@ -1,6 +1,7 @@
 class mem_base_test extends uvm_test;
   
    mem_env env_o;
+   mem_sequence seq_o;
   
   //factory reg 
   
@@ -27,5 +28,17 @@ class mem_base_test extends uvm_test;
     super.end_of_elaboration_phase(phase);
     uvm_top.print_topology();
   endfunction 
+  
+  task run_phase(uvm_phase phase);
+
+  phase.raise_objection(this);
+
+  seq_o = mem_sequence::type_id::create("seq_o");
+
+  seq_o.start(env_o.agent_o.sqr_o);
+
+  phase.drop_objection(this);
+
+endtask 
   
 endclass

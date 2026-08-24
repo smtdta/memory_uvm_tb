@@ -2,7 +2,9 @@
 `include "uvm_pkg.sv"
  import uvm_pkg::*;
    
+`include "mem_defines.sv"
 `include "mem_tx.sv"
+`include "mem_sequence.sv"
 `include "mem_coverage.sv"
 `include "mem_monitor.sv"
 `include "mem_driver.sv"
