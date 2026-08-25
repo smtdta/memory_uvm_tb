@@ -41,6 +41,8 @@ class mem_driver extends uvm_driver #(mem_tx);
   drv_vif.addr_intf  = tx.addr_i;
   drv_vif.wdata_intf = tx.wdata_i;
   drv_vif.wr_rd_intf = tx.wr_rd_i;
+  
+  @(posedge drv_vif.clk_intf);
   drv_vif.valid_intf = 1'b1;
 
   wait (drv_vif.ready_intf == 1'b1);
@@ -49,7 +51,7 @@ class mem_driver extends uvm_driver #(mem_tx);
 
   drv_vif.valid_intf = 1'b0;
   
-  wait (drv_vif.ready_intf == 1'b0);
+  //wait (drv_vif.ready_intf == 1'b0);
    
 endtask 
   
