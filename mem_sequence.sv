@@ -16,13 +16,14 @@ class mem_sequence extends uvm_sequence #(mem_tx);
     repeat (8) begin
       
       start_item(req);
-      tx_1=new req;
-      tx_Q.push_back(tx_1);
 
       assert(req.randomize() with {
         wr_rd_i == 1;
       });
 
+      tx_1=new req;
+      tx_Q.push_back(tx_1);
+      
       finish_item(req);
 
       //$display("FROM SEQUENCE");
@@ -30,6 +31,13 @@ class mem_sequence extends uvm_sequence #(mem_tx);
 
     end
     
+   foreach (tx_Q[i]) begin
+  $display("tx_Q[%0d] addr_i=%0d wdata_i=%0h wr_rd_i=%0b",
+           i,
+           tx_Q[i].addr_i,
+           tx_Q[i].wdata_i,
+           tx_Q[i].wr_rd_i);
+end
     
     //read 
     
