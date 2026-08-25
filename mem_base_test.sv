@@ -30,16 +30,29 @@ class mem_base_test extends uvm_test;
   endfunction 
   
  task run_phase(uvm_phase phase);
-
+   
   phase.raise_objection(this);
+   
+  tb_top.reset_dut();
 
   seq_o = mem_sequence::type_id::create("seq_o");
   seq_o.start(env_o.agent_o.sqr_o);
 
-  phase.phase_done.set_drain_time(this, 100ns);
+  phase.phase_done.set_drain_time(this, 200ns);
 
   phase.drop_objection(this);
 
  endtask
+  
+  function void report_phase(uvm_phase phase);
+
+  super.report_phase(phase);
+
+  $display("======================================");
+  $display("MEMORY COVERAGE = %0.2f%%",
+           env_o.agent_o.cov_o.mem_cg.get_coverage());
+  $display("======================================");
+
+endfunction
 
 endclass

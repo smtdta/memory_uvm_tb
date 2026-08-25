@@ -26,9 +26,15 @@ class mem_agent extends uvm_agent;
   endfunction 
   
   function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    //sqr , drv connection
-    drv_o.seq_item_port.connect(sqr_o.seq_item_export);
-  endfunction
+
+  super.connect_phase(phase);
+
+  // Sequencer → Driver
+  drv_o.seq_item_port.connect(sqr_o.seq_item_export);
+
+  // Monitor → Coverage
+  mon_o.ap_port.connect(cov_o.analysis_export);
+
+endfunction
   
 endclass

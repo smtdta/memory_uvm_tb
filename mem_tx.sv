@@ -1,6 +1,6 @@
 class mem_tx extends uvm_sequence_item;
 
-  rand bit [`ADDR_WIDTH-1:0] addr_i;
+  randc bit [`ADDR_WIDTH-1:0] addr_i;
   rand bit [`WIDTH-1:0]      wdata_i;
   rand bit                   wr_rd_i;
 
@@ -19,6 +19,7 @@ class mem_tx extends uvm_sequence_item;
   
   constraint read_wdata_c {
   !wr_rd_i -> wdata_i == '0;
+  //addr_i !=0;
 }
 
 endclass
