@@ -19,5 +19,5 @@
 `include "mem_coverage.sv"
 `include "mem_agent.sv"
 `include "mem_env.sv"
-`include "mem_sequence.sv"
-`include "mem_base_test.sv"
+`include "mem_sequence_lib.sv"
+`include "mem_test_lib.sv"
