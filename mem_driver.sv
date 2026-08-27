@@ -10,7 +10,8 @@ class mem_driver extends uvm_driver #(mem_tx);
   
   function new(string name="",uvm_component parent=null);
     super.new(name,parent);
-    drv_vif=mem_common::vif;
+    //drv_vif=mem_common::vif;
+    uvm_resource_db#(virtual mem_interface#(`WIDTH,`DEPTH))::read_by_name("*", "vif", drv_vif, this);
   endfunction
   
   task run_phase(uvm_phase phase);

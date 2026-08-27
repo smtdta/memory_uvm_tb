@@ -9,7 +9,8 @@ class mem_monitor extends uvm_monitor;
   function new(string name = "", uvm_component parent = null);
     super.new(name, parent);
 
-    mon_vif = mem_common::vif;
+    //mon_vif = mem_common::vif;
+    uvm_resource_db#(virtual mem_interface#(`WIDTH,`DEPTH))::read_by_name("*", "vif", mon_vif, this);
     ap_port = new("ap_port", this);
   endfunction
 

@@ -9,7 +9,7 @@
 
 
 `include "mem_interface.sv"
-`include "mem_common.sv"
+//`include "mem_common.sv"
 `include "memory.v"
 
 `include "mem_tx.sv"

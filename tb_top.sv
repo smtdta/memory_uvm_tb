@@ -52,7 +52,8 @@
    
    initial
      begin
-       mem_common::vif = pif;
+      // mem_common::vif = pif;
+       uvm_resource_db#( virtual mem_interface#(`WIDTH, `DEPTH) )::set("*","vif",pif,null);
        clk_i=0;     
        run_test("mem_base_test");  
      end
