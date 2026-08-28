@@ -1,4 +1,4 @@
-class mem_sequencer extends uvm_sequencer #(mem_tx);
+/*class mem_sequencer extends uvm_sequencer #(mem_tx);
   
   //factory reg 
   
@@ -10,4 +10,6 @@ class mem_sequencer extends uvm_sequencer #(mem_tx);
     super.new(name,parent);
   endfunction
   
-endclass
+endclass */
+
+typedef uvm_sequencer #(mem_tx) mem_sequencer;
