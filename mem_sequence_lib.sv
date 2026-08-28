@@ -10,29 +10,6 @@ class mem_base_sequence extends uvm_sequence #(mem_tx);
     super.new(name);
   endfunction
 
-  uvm_phase phase;
-
-
-  task pre_body();
-
-    phase = get_starting_phase();
-
-    if (phase != null) begin
-      phase.raise_objection(this);
-      phase.phase_done.set_drain_time(this, 100);
-    end
-
-  endtask
-
-
-  task post_body();
-
-    if (phase != null) begin
-      phase.drop_objection(this);
-    end
-
-  endtask
-
 endclass
 
 
