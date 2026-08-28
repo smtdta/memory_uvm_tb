@@ -51,6 +51,9 @@ class mem_driver extends uvm_driver #(mem_tx);
   @(posedge drv_vif.clk_intf);
 
   drv_vif.valid_intf = 1'b0;
+  drv_vif.addr_intf  = '0;//tx.addr_i;
+  drv_vif.wdata_intf = '0;//tx.wdata_i;
+  drv_vif.wr_rd_intf = '0;//tx.wr_rd_i;
   
   //wait (drv_vif.ready_intf == 1'b0);
    
