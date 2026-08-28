@@ -6,9 +6,30 @@ class mem_base_sequence extends uvm_sequence #(mem_tx);
 
   `uvm_object_utils(mem_base_sequence)
 
-  function new(string name = "mem_sequence");
+  uvm_phase phase;
+
+  function new(string name = "mem_base_sequence");
     super.new(name);
   endfunction
+
+  task pre_body();
+
+    phase = get_starting_phase();
+
+    if (phase != null)
+      phase.raise_objection(this);
+    
+    tb_top.reset_dut(); // reset applied now 
+
+  endtask
+
+
+  task post_body();
+
+    if (phase != null)
+      phase.drop_objection(this);
+
+  endtask
 
 endclass
 
