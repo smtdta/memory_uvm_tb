@@ -39,7 +39,7 @@ class mem_base_test extends uvm_test;
     uvm_resource_db#(int)::set(
       "*",
       "num_of_iterations",
-      5,
+      8,
       this
     );
 

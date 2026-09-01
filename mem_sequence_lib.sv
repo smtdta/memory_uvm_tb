@@ -90,6 +90,7 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
   
   int num_tx;
     
+  randc bit [`ADDR_WIDTH-1:0] addr;
 
   `uvm_object_utils(mem_n_wr_n_rd_seq)
 
@@ -106,11 +107,11 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
     // WRITE
     // --------------------------------------------------------
 
-    req = new();
+    //req = new(); //can't use it for randc with `uvm_do_with
 
     repeat (num_tx) begin
 
-      start_item(req);
+      /*start_item(req);
 
       assert(req.randomize() with {
         wr_rd_i == 1;
@@ -119,7 +120,12 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
       tx_1 = new req;
       tx_Q.push_back(tx_1);
 
-      finish_item(req);
+      finish_item(req);*/
+      
+       assert(this.randomize());
+      `uvm_do_with(req, {wr_rd_i == 1;addr_i==local::addr;})
+       tx_1 = new req;
+       tx_Q.push_back(tx_1);
 
     end
 
@@ -145,7 +151,7 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
 
       tx_2 = tx_Q.pop_front();
 
-      req = new();
+      /*req = new();
 
       start_item(req);
 
@@ -154,7 +160,10 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
         addr_i  == tx_2.addr_i;
       });
 
-      finish_item(req);
+      finish_item(req); */
+      
+      `uvm_do_with(req,{ wr_rd_i == 0;
+        addr_i  == tx_2.addr_i;});
 
     end
 
