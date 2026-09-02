@@ -291,6 +291,7 @@ class mem_wr_rd_seq extends mem_base_sequence;
 
   // Upper-layer cyclic random address
   randc bit [`ADDR_WIDTH-1:0] addr;
+  bit [`ADDR_WIDTH-1:0] addr_q[$];
 
 
   // ----------------------------------------------------------
@@ -298,6 +299,7 @@ class mem_wr_rd_seq extends mem_base_sequence;
   // ----------------------------------------------------------
   function new(string name = "mem_wr_rd_seq");
     super.new(name);
+    do_not_randomize = 1; //very beautiful UVM feature and important
   endfunction
 
 
@@ -313,12 +315,19 @@ class mem_wr_rd_seq extends mem_base_sequence;
       this
     );
 
+    $display("BEFORE LOOP: addr = %0d", addr);
+
     repeat (num_tx) begin
 
       // Generate next cyclic address
       assert(this.randomize());
 
-      $display("addr = %0d", this.addr);
+      $display(
+        "AFTER RANDOMIZE: addr=%0d",
+        addr
+      );
+
+      addr_q.push_back(this.addr);
 
       // Write to generated address
       `uvm_do_with(wr, {
@@ -331,6 +340,20 @@ class mem_wr_rd_seq extends mem_base_sequence;
       })
 
     end
+
+  endtask
+
+
+  task post_body();
+
+    addr_q.sort();
+
+    $display(
+      "addr_q=%p",
+      addr_q
+    );
+
+    super.post_body();
 
   endtask
 
