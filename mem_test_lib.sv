@@ -209,7 +209,7 @@ class mem_wr_rd_test extends mem_base_test;
         this,
         "env_o.agent_o.sqr_o.run_phase",
         "default_sequence",
-        mem_wr_rd_seq::get_type()
+         wr_rd_seq_layer_2::get_type()
     );
 
   endfunction

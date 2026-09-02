@@ -18,7 +18,7 @@ class mem_base_sequence extends uvm_sequence #(mem_tx);
 
 
   // ----------------------------------------------------------
-  // Pre Body
+  // Pre-Body
   // ----------------------------------------------------------
   task pre_body();
 
@@ -34,7 +34,7 @@ class mem_base_sequence extends uvm_sequence #(mem_tx);
 
 
   // ----------------------------------------------------------
-  // Post Body
+  // Post-Body
   // ----------------------------------------------------------
   task post_body();
 
@@ -83,6 +83,7 @@ class mem_1_wr_1_rd_seq extends mem_base_sequence;
       wr_rd_i == 1;
     });
 
+    // Save the write transaction for the following read
     tx_1 = new req;
 
     finish_item(req);
@@ -111,6 +112,7 @@ endclass
 
 // ============================================================
 // N WRITE - N READ SEQUENCE
+// Pattern: WR WR WR ... RD RD RD ...
 // ============================================================
 
 class mem_n_wr_n_rd_seq extends mem_base_sequence;
@@ -121,8 +123,10 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
   mem_tx tx_2;
   mem_tx tx_Q[$];
 
+  // Number of write/read iterations
   int num_tx;
 
+  // Cyclic random address
   randc bit [`ADDR_WIDTH-1:0] addr;
 
 
@@ -131,6 +135,11 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
   // ----------------------------------------------------------
   function new(string name = "mem_n_wr_n_rd_seq");
     super.new(name);
+
+    // Prevent automatic randomization when started as a
+    // type-based default sequence. This preserves the randc
+    // cycle for the explicit randomize() calls in body().
+    do_not_randomize = 1;
   endfunction
 
 
@@ -148,11 +157,12 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
 
 
     // --------------------------------------------------------
-    // WRITE
+    // WRITE PHASE
     // --------------------------------------------------------
 
     repeat (num_tx) begin
 
+      // Generate next cyclic address
       assert(this.randomize());
 
       `uvm_do_with(req, {
@@ -160,6 +170,7 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
         addr_i  == local::addr;
       })
 
+      // Store a copy of the write transaction
       tx_1 = new req;
       tx_Q.push_back(tx_1);
 
@@ -184,11 +195,12 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
 
 
     // --------------------------------------------------------
-    // READ
+    // READ PHASE
     // --------------------------------------------------------
 
     repeat (num_tx) begin
 
+      // Retrieve the corresponding stored write transaction
       tx_2 = tx_Q.pop_front();
 
       `uvm_do_with(req, {
@@ -275,7 +287,8 @@ endclass
 
 
 // ============================================================
-// WRITE - READ LAYERED SEQUENCE
+// WRITE - READ LAYERED SEQUENCE 1
+// Pattern: WR RD WR RD WR RD ...
 // ============================================================
 
 class mem_wr_rd_seq extends mem_base_sequence;
@@ -291,6 +304,8 @@ class mem_wr_rd_seq extends mem_base_sequence;
 
   // Upper-layer cyclic random address
   randc bit [`ADDR_WIDTH-1:0] addr;
+
+  // Queue used to store generated addresses for debug
   bit [`ADDR_WIDTH-1:0] addr_q[$];
 
 
@@ -299,7 +314,11 @@ class mem_wr_rd_seq extends mem_base_sequence;
   // ----------------------------------------------------------
   function new(string name = "mem_wr_rd_seq");
     super.new(name);
-    do_not_randomize = 1; //very beautiful UVM feature and important
+
+    // Prevent automatic randomization when started as a
+    // type-based default sequence. This preserves the randc
+    // cycle for the explicit randomize() calls in body().
+    do_not_randomize = 1;
   endfunction
 
 
@@ -327,6 +346,7 @@ class mem_wr_rd_seq extends mem_base_sequence;
         addr
       );
 
+      // Store generated address for debug
       addr_q.push_back(this.addr);
 
       // Write to generated address
@@ -334,7 +354,7 @@ class mem_wr_rd_seq extends mem_base_sequence;
         addr_wr == local::addr;
       })
 
-      // Read from same generated address
+      // Read from the same generated address
       `uvm_do_with(rd, {
         addr_rd == local::addr;
       })
@@ -344,8 +364,12 @@ class mem_wr_rd_seq extends mem_base_sequence;
   endtask
 
 
+  // ----------------------------------------------------------
+  // Post-Body
+  // ----------------------------------------------------------
   task post_body();
 
+    // Debug: sort and display all generated addresses
     addr_q.sort();
 
     $display(
@@ -353,7 +377,102 @@ class mem_wr_rd_seq extends mem_base_sequence;
       addr_q
     );
 
+    // Call base post_body() to drop the phase objection
     super.post_body();
+
+  endtask
+
+endclass
+
+
+
+// ============================================================
+// WRITE - READ LAYERED SEQUENCE 2
+// Pattern: WR WR WR ... RD RD RD ...
+// ============================================================
+
+class wr_rd_seq_layer_2 extends mem_base_sequence;
+
+  `uvm_object_utils(wr_rd_seq_layer_2)
+
+  // Upper-layer cyclic random write address
+  randc bit [`ADDR_WIDTH-1:0] addr_2;
+
+  // Address used to replay stored write addresses during reads
+  bit [`ADDR_WIDTH-1:0] rd_addr_2;
+
+  // Queue storing write addresses for the later read phase
+  bit [`ADDR_WIDTH-1:0] addr_q[$];
+
+  // Lower-level sequence handles
+  mem_wr_seq wr_o;
+  mem_rd_seq rd_o;
+
+  // Number of write/read iterations
+  int num_itr;
+
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "wr_rd_seq_layer_2");
+    super.new(name);
+
+    // Prevent automatic randomization when started as a
+    // type-based default sequence. This preserves the randc
+    // cycle for the explicit randomize() calls in body().
+    do_not_randomize = 1;
+  endfunction
+
+
+  // ----------------------------------------------------------
+  // Body
+  // ----------------------------------------------------------
+  task body();
+
+    uvm_resource_db#(int)::read_by_name(
+      "*",
+      "num_of_iterations",
+      num_itr,
+      this
+    );
+
+
+    // --------------------------------------------------------
+    // WRITE PHASE
+    // --------------------------------------------------------
+
+    repeat (num_itr) begin
+
+      // Generate next cyclic write address
+      assert(this.randomize());
+
+      // Store address for the later read phase
+      addr_q.push_back(this.addr_2);
+
+      // Pass generated address to the lower-level write sequence
+      `uvm_do_with(wr_o, {
+        addr_wr == addr_2;
+      })
+
+    end
+
+
+    // --------------------------------------------------------
+    // READ PHASE
+    // --------------------------------------------------------
+
+    repeat (num_itr) begin
+
+      // Retrieve addresses in the same order they were written
+      rd_addr_2 = addr_q.pop_front();
+
+      // Pass stored address to the lower-level read sequence
+      `uvm_do_with(rd_o, {
+        addr_rd == rd_addr_2;
+      })
+
+    end
 
   endtask
 
