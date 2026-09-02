@@ -54,8 +54,8 @@
      begin
       // mem_common::vif = pif;
        uvm_resource_db#( virtual mem_interface#(`WIDTH, `DEPTH) )::set("*","vif",pif,null);
-       clk_i=0;     
-       run_test("mem_n_wr_n_rd_test");  
+       clk_i=0;   
+       run_test("mem_wr_rd_test");  
      end
    
    //vcd dump 

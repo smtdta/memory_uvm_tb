@@ -8,22 +8,34 @@ class mem_base_sequence extends uvm_sequence #(mem_tx);
 
   uvm_phase phase;
 
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
   function new(string name = "mem_base_sequence");
     super.new(name);
   endfunction
 
+
+  // ----------------------------------------------------------
+  // Pre Body
+  // ----------------------------------------------------------
   task pre_body();
 
     phase = get_starting_phase();
 
     if (phase != null)
       phase.raise_objection(this);
-    
-    tb_top.reset_dut(); // reset applied now 
+
+    // Reset DUT before starting stimulus
+    tb_top.reset_dut();
 
   endtask
 
 
+  // ----------------------------------------------------------
+  // Post Body
+  // ----------------------------------------------------------
   task post_body();
 
     if (phase != null)
@@ -36,99 +48,127 @@ endclass
 
 
 // ============================================================
-// WRITE-READ SEQUENCE
+// 1 WRITE - 1 READ SEQUENCE
 // ============================================================
 
-
 class mem_1_wr_1_rd_seq extends mem_base_sequence;
-  
+
+  `uvm_object_utils(mem_1_wr_1_rd_seq)
+
   mem_tx tx_1;
-  
- `uvm_object_utils(mem_1_wr_1_rd_seq)
-  
-   function new(string name = "mem_sequence");
-    super.new(name);
-  endfunction
-  
-  task body();
-    
-    
-    //write 
-    
-      req=new();
-      start_item(req);
 
-      assert(req.randomize() with {
-        wr_rd_i == 1;
-      });
-    
-      tx_1=new req;
 
-      finish_item(req);
-    
-    //read 
-    
-       
-     req=new();
-     start_item(req);
-    
-     assert(req.randomize() with {
-        wr_rd_i == 0; addr_i==tx_1.addr_i;
-      });
-    
-      finish_item(req);
-     
-    
-  endtask
-  
-  
-endclass 
-
-class mem_n_wr_n_rd_seq extends mem_base_sequence;
-
-  mem_tx tx_1, tx_2, tx_Q[$];
-  
-  int num_tx;
-    
-  randc bit [`ADDR_WIDTH-1:0] addr;
-
-  `uvm_object_utils(mem_n_wr_n_rd_seq)
-
-  function new(string name = "mem_sequence");
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "mem_1_wr_1_rd_seq");
     super.new(name);
   endfunction
 
 
+  // ----------------------------------------------------------
+  // Body
+  // ----------------------------------------------------------
   task body();
-    
-    uvm_resource_db#(int)::read_by_name("*", "num_of_iterations",num_tx, this);
 
     // --------------------------------------------------------
     // WRITE
     // --------------------------------------------------------
 
-    //req = new(); //can't use it for randc with `uvm_do_with
+    req = new();
+
+    start_item(req);
+
+    assert(req.randomize() with {
+      wr_rd_i == 1;
+    });
+
+    tx_1 = new req;
+
+    finish_item(req);
+
+
+    // --------------------------------------------------------
+    // READ
+    // --------------------------------------------------------
+
+    req = new();
+
+    start_item(req);
+
+    assert(req.randomize() with {
+      wr_rd_i == 0;
+      addr_i  == tx_1.addr_i;
+    });
+
+    finish_item(req);
+
+  endtask
+
+endclass
+
+
+
+// ============================================================
+// N WRITE - N READ SEQUENCE
+// ============================================================
+
+class mem_n_wr_n_rd_seq extends mem_base_sequence;
+
+  `uvm_object_utils(mem_n_wr_n_rd_seq)
+
+  mem_tx tx_1;
+  mem_tx tx_2;
+  mem_tx tx_Q[$];
+
+  int num_tx;
+
+  randc bit [`ADDR_WIDTH-1:0] addr;
+
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "mem_n_wr_n_rd_seq");
+    super.new(name);
+  endfunction
+
+
+  // ----------------------------------------------------------
+  // Body
+  // ----------------------------------------------------------
+  task body();
+
+    uvm_resource_db#(int)::read_by_name(
+      "*",
+      "num_of_iterations",
+      num_tx,
+      this
+    );
+
+
+    // --------------------------------------------------------
+    // WRITE
+    // --------------------------------------------------------
 
     repeat (num_tx) begin
 
-      /*start_item(req);
+      assert(this.randomize());
 
-      assert(req.randomize() with {
+      `uvm_do_with(req, {
         wr_rd_i == 1;
-      });
+        addr_i  == local::addr;
+      })
 
       tx_1 = new req;
       tx_Q.push_back(tx_1);
 
-      finish_item(req);*/
-      
-       assert(this.randomize());
-      `uvm_do_with(req, {wr_rd_i == 1;addr_i==local::addr;})
-       tx_1 = new req;
-       tx_Q.push_back(tx_1);
-
     end
 
+
+    // --------------------------------------------------------
+    // DISPLAY STORED TRANSACTIONS
+    // --------------------------------------------------------
 
     foreach (tx_Q[i]) begin
 
@@ -151,19 +191,144 @@ class mem_n_wr_n_rd_seq extends mem_base_sequence;
 
       tx_2 = tx_Q.pop_front();
 
-      /*req = new();
-
-      start_item(req);
-
-      assert(req.randomize() with {
+      `uvm_do_with(req, {
         wr_rd_i == 0;
         addr_i  == tx_2.addr_i;
-      });
+      })
 
-      finish_item(req); */
-      
-      `uvm_do_with(req,{ wr_rd_i == 0;
-        addr_i  == tx_2.addr_i;});
+    end
+
+  endtask
+
+endclass
+
+
+
+// ============================================================
+// 1 WRITE SEQUENCE
+// ============================================================
+
+class mem_wr_seq extends mem_base_sequence;
+
+  `uvm_object_utils(mem_wr_seq)
+
+  rand bit [`ADDR_WIDTH-1:0] addr_wr;
+
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "mem_wr_seq");
+    super.new(name);
+  endfunction
+
+
+  // ----------------------------------------------------------
+  // Body
+  // ----------------------------------------------------------
+  task body();
+
+    `uvm_do_with(req, {
+      wr_rd_i == 1;
+      addr_i  == local::addr_wr;
+    })
+
+  endtask
+
+endclass
+
+
+
+// ============================================================
+// 1 READ SEQUENCE
+// ============================================================
+
+class mem_rd_seq extends mem_base_sequence;
+
+  `uvm_object_utils(mem_rd_seq)
+
+  rand bit [`ADDR_WIDTH-1:0] addr_rd;
+
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "mem_rd_seq");
+    super.new(name);
+  endfunction
+
+
+  // ----------------------------------------------------------
+  // Body
+  // ----------------------------------------------------------
+  task body();
+
+    `uvm_do_with(req, {
+      wr_rd_i == 0;
+      addr_i  == local::addr_rd;
+    })
+
+  endtask
+
+endclass
+
+
+
+// ============================================================
+// WRITE - READ LAYERED SEQUENCE
+// ============================================================
+
+class mem_wr_rd_seq extends mem_base_sequence;
+
+  `uvm_object_utils(mem_wr_rd_seq)
+
+  // Lower-level sequence handles
+  mem_wr_seq wr;
+  mem_rd_seq rd;
+
+  // Number of write-read iterations
+  int num_tx;
+
+  // Upper-layer cyclic random address
+  randc bit [`ADDR_WIDTH-1:0] addr;
+
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "mem_wr_rd_seq");
+    super.new(name);
+  endfunction
+
+
+  // ----------------------------------------------------------
+  // Body
+  // ----------------------------------------------------------
+  task body();
+
+    uvm_resource_db#(int)::read_by_name(
+      "*",
+      "num_of_iterations",
+      num_tx,
+      this
+    );
+
+    repeat (num_tx) begin
+
+      // Generate next cyclic address
+      assert(this.randomize());
+
+      $display("addr = %0d", this.addr);
+
+      // Write to generated address
+      `uvm_do_with(wr, {
+        addr_wr == local::addr;
+      })
+
+      // Read from same generated address
+      `uvm_do_with(rd, {
+        addr_rd == local::addr;
+      })
 
     end
 

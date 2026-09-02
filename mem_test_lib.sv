@@ -101,7 +101,6 @@ class mem_base_test extends uvm_test;
 endclass
 
 
-
 // ============================================================
 // 1 WRITE - 1 READ TEST
 // ============================================================
@@ -182,6 +181,38 @@ class mem_n_wr_n_rd_test extends mem_base_test;
         mem_n_wr_n_rd_seq::get_type()
     );
 
-  endfunction
+  endfunction 
 
 endclass
+
+
+
+// ============================================================
+// Seq Layered Test
+// ============================================================
+
+class mem_wr_rd_test extends mem_base_test;
+  
+  `uvm_component_utils(mem_wr_rd_test)
+  
+  function new(string name = "",uvm_component parent = null);
+    super.new(name, parent);
+  endfunction
+  
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+
+    // Select sequence for this test
+    //seq_o = mem_1_wr_1_rd_seq::type_id::create("seq_o");
+    
+    uvm_config_db#(uvm_object_wrapper)::set(
+        this,
+        "env_o.agent_o.sqr_o.run_phase",
+        "default_sequence",
+        mem_wr_rd_seq::get_type()
+    );
+
+  endfunction
+  
+endclass
+
