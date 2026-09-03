@@ -7,8 +7,9 @@ class mem_base_test extends uvm_test;
   // ----------------------------------------------------------
   // Handles
   // ----------------------------------------------------------
-  mem_env           env_o;
- // mem_base_sequence seq_o; //no need now
+  mem_env env_o;
+
+  // mem_base_sequence seq_o;  // No need now
 
 
   // ----------------------------------------------------------
@@ -45,8 +46,24 @@ class mem_base_test extends uvm_test;
 
   endfunction
 
-  
-  /* //no need now
+
+  // ----------------------------------------------------------
+  // Reset Phase
+  // ----------------------------------------------------------
+  task reset_phase(uvm_phase phase);
+
+    phase.raise_objection(this);
+
+    // Reset DUT
+    tb_top.reset_dut();
+
+    phase.drop_objection(this);
+
+  endtask
+
+
+  /*
+  // No need now
 
   // ----------------------------------------------------------
   // Run Phase
@@ -72,7 +89,8 @@ class mem_base_test extends uvm_test;
     phase.drop_objection(this);
 
   endtask
-*/
+  */
+
 
   // ----------------------------------------------------------
   // End of Elaboration Phase
@@ -99,6 +117,7 @@ class mem_base_test extends uvm_test;
   endfunction
 
 endclass
+
 
 
 // ============================================================
@@ -129,13 +148,13 @@ class mem_1_wr_1_rd_test extends mem_base_test;
     super.build_phase(phase);
 
     // Select sequence for this test
-    //seq_o = mem_1_wr_1_rd_seq::type_id::create("seq_o");
-    
+    // seq_o = mem_1_wr_1_rd_seq::type_id::create("seq_o");
+
     uvm_config_db#(uvm_object_wrapper)::set(
-        this,
-        "env_o.agent_o.sqr_o.run_phase",
-        "default_sequence",
-        mem_1_wr_1_rd_seq::get_type()
+      this,
+      "env_o.agent_o.sqr_o.run_phase",
+      "default_sequence",
+      mem_1_wr_1_rd_seq::get_type()
     );
 
   endfunction
@@ -172,47 +191,58 @@ class mem_n_wr_n_rd_test extends mem_base_test;
     super.build_phase(phase);
 
     // Select sequence for this test
-   // seq_o = mem_n_wr_n_rd_seq::type_id::create("seq_o");
-    
+    // seq_o = mem_n_wr_n_rd_seq::type_id::create("seq_o");
+
     uvm_config_db#(uvm_object_wrapper)::set(
-        this,
-        "env_o.agent_o.sqr_o.run_phase",
-        "default_sequence",
-        mem_n_wr_n_rd_seq::get_type()
+      this,
+      "env_o.agent_o.sqr_o.run_phase",
+      "default_sequence",
+      mem_n_wr_n_rd_seq::get_type()
     );
 
-  endfunction 
+  endfunction
 
 endclass
 
 
 
 // ============================================================
-// Seq Layered Test
+// SEQUENCE LAYERED TEST
 // ============================================================
 
 class mem_wr_rd_test extends mem_base_test;
-  
+
+  // ----------------------------------------------------------
+  // Factory Registration
+  // ----------------------------------------------------------
   `uvm_component_utils(mem_wr_rd_test)
-  
-  function new(string name = "",uvm_component parent = null);
+
+
+  // ----------------------------------------------------------
+  // Constructor
+  // ----------------------------------------------------------
+  function new(string name = "",
+               uvm_component parent = null);
     super.new(name, parent);
   endfunction
-  
+
+
+  // ----------------------------------------------------------
+  // Build Phase
+  // ----------------------------------------------------------
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
     // Select sequence for this test
-    //seq_o = mem_1_wr_1_rd_seq::type_id::create("seq_o");
-    
+    // seq_o = mem_1_wr_1_rd_seq::type_id::create("seq_o");
+
     uvm_config_db#(uvm_object_wrapper)::set(
-        this,
-        "env_o.agent_o.sqr_o.run_phase",
-        "default_sequence",
-         wr_rd_seq_layer_2::get_type()
+      this,
+      "env_o.agent_o.sqr_o.run_phase",
+      "default_sequence",
+      wr_rd_seq_layer_2::get_type()
     );
 
   endfunction
-  
-endclass
 
+endclass

@@ -27,9 +27,6 @@ class mem_base_sequence extends uvm_sequence #(mem_tx);
     if (phase != null)
       phase.raise_objection(this);
 
-    // Reset DUT before starting stimulus
-    tb_top.reset_dut();
-
   endtask
 
 
